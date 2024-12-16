@@ -1,6 +1,7 @@
 # github-repo-searcher
-DoD: Развернуто локальное решение с простым frontend. Система должна позволять загрузить ссылку на GitHub-репозиторий, по которому в дальнейшем можно будет задавать вопросы по коду
+**DoD**: Развернуто локальное решение с простым frontend. Система должна позволять загрузить ссылку на GitHub-репозиторий, по которому в дальнейшем можно будет задавать вопросы по коду
 
+### Схема работы
 ```mermaid
 flowchart TD
     A[Clone GitHub Repository] --> B[Read data]
@@ -10,5 +11,5 @@ flowchart TD
     E -->|Query| D
     E -->|Context/Prompt| F[LLM]
     F --> G[Answer the question]
-    G -->D
+    G -->|Query| D
 ```
