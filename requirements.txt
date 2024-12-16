@@ -1,0 +1,12 @@
+llama-index
+load_dotenv
+tree_sitter_python
+tree_sitter_languages
+tree-sitter
+llama-index-vector-stores-elasticsearch
+# llama-index-embeddings-openai==0.2.5
+llama_index.llms.ollama
+spacy==3.8.2
+IPython==8.28.0
+tabulate==0.9.0
+streamlit==1.39.0
