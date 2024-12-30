@@ -27,6 +27,8 @@ import shutil
 import time
 import glob
 import os
+import re
+import argparse
 
 
 nest_asyncio.apply()
@@ -43,7 +45,17 @@ Settings.chunk_lines_overlap = 20
 Settings.max_chars = 1500
 
 
-def clone_repository(owner, repo, branch, base_path="/tmp"):
+
+def parse_repo_url(url):
+    pattern = r"https?://github\.com/([^/]+)/([^/]+)"
+    match = re.match(pattern, url)
+    if match:
+        owner, repo_name = match.groups()
+        repo_name = repo_name.rstrip('.git')
+        return owner, repo_name
+    raise ValueError(f"Invalid GitHub URL: {url}")
+
+def clone_repository(owner, repo, base_path="/tmp"):
     local_repo_path = os.path.join(base_path, owner, repo)
     clone_url = f"https://github.com/{owner}/{repo}.git"
 
@@ -89,10 +101,8 @@ def collect_and_print_file_summary(file_summary):
         print(summary)
 
 
-def parse_documents():
-    owner = os.getenv("GITHUB_OWNER")
-    repo = os.getenv("GITHUB_REPO")
-    branch = os.getenv("GITHUB_BRANCH")
+def parse_documents(args):
+    [owner, repo] = parse_repo_url(args.url)
     base_path = os.getenv("BASE_PATH", "/tmp")
 
     if not owner or not repo:
@@ -100,7 +110,7 @@ def parse_documents():
             "GITHUB_OWNER and GITHUB_REPO environment variables must be set."
         )
 
-    local_repo_path = clone_repository(owner, repo, branch, base_path)
+    local_repo_path = clone_repository(owner, repo, base_path)
 
     nodes = []
     file_summary = []
@@ -115,21 +125,16 @@ def parse_documents():
     java_parser = get_parser("java")
     c_parser = get_parser("c")
     rust_parser = get_parser("rust")
-    swift_parser = get_parser("swift")
     php_parser = get_parser("php")
     kotlin_parser = get_parser("kotlin")
     ruby_parser = get_parser("ruby")
     perl_parser = get_parser("perl")
     html_parser = get_parser("html")
     css_parser = get_parser("css")
-    scss_parser = get_parser("scss")
     sql_parser = get_parser("sql")
     r_parser = get_parser("r")
-    matlab_parser = get_parser("matlab")
     lua_parser = get_parser("lua")
-    dart_parser = get_parser("dart")
     scala_parser = get_parser("scala")
-    shell_parser = get_parser("shell")
 
     parsers_and_extensions = [
         (SentenceSplitter(), [".md"]),
@@ -144,21 +149,16 @@ def parse_documents():
         (CodeSplitter(language="java", parser=java_parser), [".java"]),
         (CodeSplitter(language="c", parser=c_parser), [".c", ".h"]),
         (CodeSplitter(language="rust", parser=rust_parser), [".rs"]),
-        (CodeSplitter(language="swift", parser=swift_parser), [".swift"]),
         (CodeSplitter(language="php", parser=php_parser), [".php"]),
         (CodeSplitter(language="kotlin", parser=kotlin_parser), [".kt", ".kts"]),
         (CodeSplitter(language="ruby", parser=ruby_parser), [".rb"]),
         (CodeSplitter(language="perl", parser=perl_parser), [".pl", ".pm"]),
         (CodeSplitter(language="html", parser=html_parser), [".html", ".htm"]),
         (CodeSplitter(language="css", parser=css_parser), [".css"]),
-        (CodeSplitter(language="scss", parser=scss_parser), [".scss"]),
         (CodeSplitter(language="sql", parser=sql_parser), [".sql"]),
         (CodeSplitter(language="r", parser=r_parser), [".r"]),
-        (CodeSplitter(language="matlab", parser=matlab_parser), [".m"]),
         (CodeSplitter(language="lua", parser=lua_parser), [".lua"]),
-        (CodeSplitter(language="dart", parser=dart_parser), [".dart"]),
         (CodeSplitter(language="scala", parser=scala_parser), [".scala"]),
-        (CodeSplitter(language="shell", parser=shell_parser), [".zsh", ".ksh"]),
     ]
     
     for parser, extensions in parsers_and_extensions:
@@ -216,7 +216,10 @@ def get_es_vector_store():
 
 
 def main():
-    nodes = parse_documents()
+    cli = argparse.ArgumentParser(description="Run the ingestion pipeline with a specified URL.")
+    cli.add_argument("--url", type=str, required=True, help="The URL of the data source")
+    args = cli.parse_args()
+    nodes = parse_documents(args)
     es_vector_store = get_es_vector_store()
 
     try:
