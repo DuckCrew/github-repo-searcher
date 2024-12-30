@@ -13,3 +13,28 @@ flowchart TD
     F --> G[Answer the question]
     G -->|Query| D
 ```
+
+### Запуск и тестирование
+
+Система работает как расширение vscode. Чтобы его запустить, склонируйте репозиторий и откройте его в VS Code.
+Далее в терминале
+
+```
+npm install
+npm run compile
+```
+
+Затем,
+
+```
+ctrl+shift+p
+Debug: Start debugging
+```
+
+После этого откроется новое окно VS Code. Это окно, в котором работает расширение. В новом окне откройте git репозиторий.
+
+```
+ctrl+shift+p
+Open chat
+```
+
