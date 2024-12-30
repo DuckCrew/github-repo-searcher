@@ -24,7 +24,13 @@ npm install
 npm run compile
 ```
 
-Затем,
+Затем нужно запустить сервер
+
+```
+python server.py
+```
+
+После этого,
 
 ```
 ctrl+shift+p
