@@ -111,18 +111,56 @@ def parse_documents():
     js_parser = get_parser("javascript")
     bash_parser = get_parser("bash")
     yaml_parser = get_parser("yaml")
+    cpp_parser = get_parser("cpp")
+    java_parser = get_parser("java")
+    c_parser = get_parser("c")
+    rust_parser = get_parser("rust")
+    swift_parser = get_parser("swift")
+    php_parser = get_parser("php")
+    kotlin_parser = get_parser("kotlin")
+    ruby_parser = get_parser("ruby")
+    perl_parser = get_parser("perl")
+    html_parser = get_parser("html")
+    css_parser = get_parser("css")
+    scss_parser = get_parser("scss")
+    sql_parser = get_parser("sql")
+    r_parser = get_parser("r")
+    matlab_parser = get_parser("matlab")
+    lua_parser = get_parser("lua")
+    dart_parser = get_parser("dart")
+    scala_parser = get_parser("scala")
+    shell_parser = get_parser("shell")
 
     parsers_and_extensions = [
         (SentenceSplitter(), [".md"]),
         (CodeSplitter(language="python", parser=py_parser), [".py", ".ipynb"]),
         (CodeSplitter(language="typescript", parser=ts_parser), [".ts"]),
         (CodeSplitter(language="go", parser=go_parser), [".go"]),
-        (CodeSplitter(language="javascript", parser=js_parser), [".js"]),
-        (CodeSplitter(language="bash", parser=bash_parser), [".bash", ",sh"]),
+        (CodeSplitter(language="javascript", parser=js_parser), [".js", ".jsx"]),
+        (CodeSplitter(language="bash", parser=bash_parser), [".bash", ".sh"]),
         (CodeSplitter(language="yaml", parser=yaml_parser), [".yaml", ".yml"]),
         (JSONNodeParser(), [".json"]),
+        (CodeSplitter(language="cpp", parser=cpp_parser), [".cpp", ".hpp", ".cxx", ".hxx", ".cc", ".hh"]),
+        (CodeSplitter(language="java", parser=java_parser), [".java"]),
+        (CodeSplitter(language="c", parser=c_parser), [".c", ".h"]),
+        (CodeSplitter(language="rust", parser=rust_parser), [".rs"]),
+        (CodeSplitter(language="swift", parser=swift_parser), [".swift"]),
+        (CodeSplitter(language="php", parser=php_parser), [".php"]),
+        (CodeSplitter(language="kotlin", parser=kotlin_parser), [".kt", ".kts"]),
+        (CodeSplitter(language="ruby", parser=ruby_parser), [".rb"]),
+        (CodeSplitter(language="perl", parser=perl_parser), [".pl", ".pm"]),
+        (CodeSplitter(language="html", parser=html_parser), [".html", ".htm"]),
+        (CodeSplitter(language="css", parser=css_parser), [".css"]),
+        (CodeSplitter(language="scss", parser=scss_parser), [".scss"]),
+        (CodeSplitter(language="sql", parser=sql_parser), [".sql"]),
+        (CodeSplitter(language="r", parser=r_parser), [".r"]),
+        (CodeSplitter(language="matlab", parser=matlab_parser), [".m"]),
+        (CodeSplitter(language="lua", parser=lua_parser), [".lua"]),
+        (CodeSplitter(language="dart", parser=dart_parser), [".dart"]),
+        (CodeSplitter(language="scala", parser=scala_parser), [".scala"]),
+        (CodeSplitter(language="shell", parser=shell_parser), [".zsh", ".ksh"]),
     ]
-
+    
     for parser, extensions in parsers_and_extensions:
         matching_files = []
         for ext in extensions:
