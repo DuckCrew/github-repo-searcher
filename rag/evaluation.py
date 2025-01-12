@@ -1,3 +1,4 @@
+import datetime
 import logging
 import sys
 import os
@@ -22,6 +23,12 @@ logging.getLogger().addHandler(logging.StreamHandler(stream=sys.stdout))
 
 parser = argparse.ArgumentParser(
     description="Process documents and questions for evaluation."
+)
+parser.add_argument(
+    "--documents_path",
+    type=str,
+    default=None,
+    help="Path to the directory containing documents for evaluation",
 )
 parser.add_argument(
     "--num_documents",
@@ -52,26 +59,32 @@ parser.add_argument(
     action="store_true",
     help="Process last N questions instead of first N",
 )
+current_time_iso = datetime.datetime.now().isoformat()
+parser.add_argument(
+    "--output_file",
+    type=str,
+    default=f"evaluation_results_{current_time_iso}.csv",
+    help="File path to save evaluation results (default: evaluation_results_<current_ISO_datetime>.csv)",
+)
 args = parser.parse_args()
 
 load_dotenv(".env")
 
-reader = SimpleDirectoryReader("/tmp/elastic/production-readiness-review")
+reader = SimpleDirectoryReader(args.documents_path)
 documents = reader.load_data()
 print(f"First document: {documents[0].text}")
 print(f"Second document: {documents[1].text}")
-print(f"Thrid document: {documents[2].text}")
-
+print(f"Third document: {documents[2].text}")
 
 if args.skip_documents > 0:
-    documents = documents[args.skip_documents :]
+    documents = documents[args.skip_documents:]
 
 if args.num_documents is not None:
     documents = documents[: args.num_documents]
 
 print(f"Number of documents loaded: {len(documents)}")
 
-llm = OpenAI(model="gpt-4o", request_timeout=120)
+llm = OpenAI(model="gpt-4o-mini", request_timeout=120)
 
 data_generator = DatasetGenerator.from_documents(documents, llm=llm)
 
@@ -84,11 +97,11 @@ try:
     eval_questions_list = [q for q in eval_questions_list if q.strip()]
 
     if args.skip_questions > 0:
-        eval_questions_list = eval_questions_list[args.skip_questions :]
+        eval_questions_list = eval_questions_list[args.skip_questions:]
 
     if args.num_questions is not None:
         if args.process_last_questions:
-            eval_questions_list = eval_questions_list[-args.num_questions :]
+            eval_questions_list = eval_questions_list[-args.num_questions:]
         else:
             eval_questions_list = eval_questions_list[: args.num_questions]
 
@@ -119,10 +132,10 @@ vector_index = VectorStoreIndex.from_documents(documents)
 
 
 def display_eval_df(
-    query: str,
-    response: Response,
-    eval_result_relevancy: EvaluationResult,
-    eval_result_faith: EvaluationResult,
+        query: str,
+        response: Response,
+        eval_result_relevancy: EvaluationResult,
+        eval_result_faith: EvaluationResult,
 ) -> None:
     relevancy_feedback = getattr(eval_result_relevancy, "feedback", "")
     relevancy_passing = getattr(eval_result_relevancy, "passing", False)
@@ -170,6 +183,15 @@ def display_eval_df(
             eval_df, headers="keys", tablefmt="grid", showindex=False, stralign="left"
         )
     )
+
+    def save_eval_df(eval_df, output_file):
+        # Проверяем, существует ли файл
+        file_exists = os.path.isfile(output_file)
+
+        # Используем метод to_csv и указываем header только если файл не существует
+        eval_df.to_csv(output_file, mode='a', index=False, header=not file_exists)
+
+    save_eval_df(eval_df, args.output_file)
 
 
 query_engine = vector_index.as_query_engine(llm=llm)
